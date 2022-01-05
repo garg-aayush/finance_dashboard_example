@@ -20,6 +20,9 @@ df_dict={}
 for s in symbol:
     df_dict[s] = pd.read_csv(datadir + s + '.NS')
 
+# read all symbols
+df_symbols = pd.read_csv(datadir + 'symbols_ns.csv')
+
 # make helper functions
 def fig_update_layout(fig):
     fig.update_layout(
@@ -31,7 +34,7 @@ def make_fig(df_dict, name='', x="Date", y="Close"):
     return fig
 
 
-fig1 = make_fig(df_dict, name='ADANIPORTS', title_x=0.5)
+fig1 = make_fig(df_dict, name='ADANIPORTS')
 fig2 = make_fig(df_dict, name='ALKEM')
 fig3 = make_fig(df_dict, name='ASHOKA')
 fig4 = make_fig(df_dict, name='ASHOKLEY')
@@ -62,6 +65,14 @@ fig_update_layout(fig9)
 
 app.layout = html.Div(className='row', children=[
     html.H1("Multiple stocks view"),
+    html.Div(children=[
+        html.Label('Dropdown'),
+        dcc.Dropdown(
+            options=[{'label': s, 'value': s}
+                    for s in df_symbols['Symbol']],
+            value=df_symbols['Symbol'][0]
+        )
+    ]),
     html.Div(children=[
         dcc.Graph(id="stock-1", style={'display': 'inline-block', 'width': '60vh', 'height': '40vh'}, figure=fig1),
         dcc.Graph(id="stock-2", style={'display': 'inline-block', 'width': '60vh', 'height': '40vh'}, figure=fig2),
