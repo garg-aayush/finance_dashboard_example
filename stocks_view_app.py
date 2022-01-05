@@ -6,7 +6,8 @@ import dash_html_components as html
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
-
+from dash.dependencies import Input, Output
+from utils import read_single_stock, write_csv
 
 app = dash.Dash(__name__)
 
@@ -44,15 +45,6 @@ fig7 = make_fig(df_dict, name='BRITANNIA')
 fig8 = make_fig(df_dict, name='CAMS')
 fig9 = make_fig(df_dict, name='COALINDIA')
 
-# fig1.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig2.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig3.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig4.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig5.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig6.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig7.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig8.update_layout(margin=dict(l=25, r=25, t=20, b=20))
-# fig9.update_layout(margin=dict(l=25, r=25, t=20, b=20))
 fig_update_layout(fig1)
 fig_update_layout(fig2)
 fig_update_layout(fig3)
@@ -63,11 +55,34 @@ fig_update_layout(fig7)
 fig_update_layout(fig8)
 fig_update_layout(fig9)
 
+###################################################
+# callbacks
+###################################################
+@app.callback(
+    Output('stock-1', 'figure'),
+    Input('drop-1', 'value'))
+
+def update_figure(symbol):
+    df = read_single_stock(symbol=symbol+'.NS', period='1y')
+    write_csv(df, './data/'+symbol+'.NS')
+    df = pd.read_csv('./data/'+symbol+'.NS')
+    print(df.head())
+    fig = px.line(df, x='Date', y='Close', title=symbol)
+
+
+    # fig.update_layout(
+    #     transition_duration=500)
+    return fig
+
+###################################################
+# App layout
+###################################################
 app.layout = html.Div(className='row', children=[
     html.H1("Multiple stocks view"),
     html.Div(children=[
         html.Label('Dropdown'),
         dcc.Dropdown(
+            id='drop-1',
             options=[{'label': s, 'value': s}
                     for s in df_symbols['Symbol']],
             value=df_symbols['Symbol'][0]
@@ -89,5 +104,7 @@ app.layout = html.Div(className='row', children=[
         dcc.Graph(id="stock-9", style={'display': 'inline-block', 'width': '60vh', 'height': '40vh'}, figure=fig9)
     ])
 ])
+
+# main function
 if __name__ == '__main__':
     app.run_server(debug=True)
