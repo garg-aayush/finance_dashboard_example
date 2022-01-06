@@ -1,5 +1,6 @@
-# App to view particular stock price over the last 1 year
+# App to view stock prices over the last 1 year
 
+# Import the required packages
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,98 +8,68 @@ import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
-from utils import download_single_stock, write_csv, make_abspath
+from utils import get_single_stock, check_dir
 from pathlib import Path
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+##########################
+# CSS sheet
+##########################
 # app = dash.Dash(__name__)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-# read all the stocks data in dict of dfs
+
+#########################################
+# Global variables and constants
+#########################################
+# port
+port=3000
+
+# dir path to download and save the stock data
 datadir = './data/'
+# time period
+period = '1y'
+# file containing all the NS symbols
+file_symbols = 'symbols_ns.csv'
+
+# plot parameters
 margin = dict(l=25, r=25, t=30, b=5, pad=0)
 transition_duration = 300
+# yaxis [min, max] -> [perc[0] * stock_min, perc[1] * stock_max]
+ylims_perc = [0.95, 1.05]
 
-df = pd.read_csv(datadir + 'sample_stock.csv')
+# xaxis [min, max] : [min_date, max_date]
+df = pd.read_csv('sample_stock.csv')
 date_range = [df['Date'].min(), df['Date'].max()]
-print(date_range)
 del df
 
-# read all symbols
-df_symbols = pd.read_csv(datadir + 'symbols_ns.csv')
+# Create necessary variables and data folder
+# load all the symbols in the memory
+print('Read all the available NSE symbols from {}'.format(file_symbols))
+df_symbols = pd.read_csv(file_symbols)
 
-# make helper functions
-
-
-def fig_update_layout(fig):
-    fig.update_layout(
-        margin=dict(l=20, r=25, t=30, b=5, pad=10, height=400))
+# create the datadir (if required) 
+check_dir(datadir, create_dir=True)
 
 
-def get_single_stock(symbol, period='1y', datadir='./data/'):
-    # filename
-    stock_file = datadir + symbol + '.NS'
-
-    # make absolute path
-    stock_file = make_abspath(stock_file)
-
-    # check if the file exists
-    if Path(stock_file).exists():
-        print('Load {}'.format(stock_file))
-        df = pd.read_csv(stock_file)
-    else:
-        print('Download {} stock data'.format(symbol))
-        df = download_single_stock(symbol + '.NS', period=period)
-        # print(df.head())
-        write_csv(df, stock_file)
-        df = pd.read_csv(stock_file)
-
-    return df
-
-
-def make_fig(df_dict, name='', x="Date", y="Close"):
-    fig = px.line(df_dict[name], x=x, y=y, title=name)
-    return fig
-
-
-# def make_line_graph(df, x="Date", y="Close"):
-#     fig = px.line(df, x=x, y=y)
-#     fig.update_layout(margin=margin,
-#                       transition_duration=transition_duration)
-#     return fig
-
-def make_line_graph(df, x="Date", y="Close"):
-    data = go.Scatter(x=df[x], y=df[y])
-    fig = go.Figure(data)
-    fig.update_layout(margin=margin,
-                      transition_duration=transition_duration,
-                      xaxis_rangeslider_visible=False,
-                      xaxis_title='Date')
-    return fig
-
-
-def make_candlestick(df):
-    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
-                                         open=df['Open'], high=df['High'],
-                                         low=df['Low'], close=df['Close'],
-                                         )
-                          ])
-    fig.update_layout(margin=margin,
-                      transition_duration=transition_duration,
-                      xaxis_rangeslider_visible=False,
-                      xaxis_title='Date')
-    return fig
-
-
+#########################################
+# Helper functions
+#########################################
 def make_plot_data(df, graph_name='Close', chart_name=['StockPrice'], days=10):
+    
     data = []
     for cname in chart_name:
         if cname == 'StockPrice':
             data.append(go.Scatter(
-                x=df['Date'], y=df[graph_name], name=cname, line=dict(color='black', width=1)))
+                                    x=df['Date'], 
+                                    y=df[graph_name],
+                                    name=cname, 
+                                    line=dict(color='black', width=1)
+                                    )
+                        )
         if cname == 'Candlestick':
-            data.append(go.Candlestick(x=df['Date'],
+            data.append(go.Candlestick(
+                                        x=df['Date'],
                                         open=df['Open'], high=df['High'],
                                         low=df['Low'], close=df['Close'],
                                         name=cname
@@ -106,23 +77,28 @@ def make_plot_data(df, graph_name='Close', chart_name=['StockPrice'], days=10):
                         )
         if cname == 'SimpleMovingAverage':
             data.append(go.Scatter(
-                x=df['Date'], y=df[graph_name].rolling(days).mean(), name=cname, line=dict(color='blue', width=1.5, dash='dot')))
+                                    x=df['Date'], 
+                                    y=df[graph_name].rolling(days).mean(), 
+                                    name=cname, 
+                                    line=dict(color='blue', width=1.5, dash='dot')
+                                    )
+                        )
+    
     return data
 
 
-def make_graph(data, yaxis_limits=[0, 1000], xaxis_limits=[]):
+def make_graph(data, xaxis_title='Date', yaxis_limits=[0, 1000], 
+                xaxis_limits=[], legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.03)):
+
     fig = go.Figure(data)
     fig.update_layout(margin=margin,
                       transition_duration=transition_duration,
                       xaxis_rangeslider_visible=False,
-                      xaxis_title='Date',
+                      xaxis_title=xaxis_title,
                       yaxis_range=yaxis_limits,
                       xaxis_range=xaxis_limits,
                       # showlegend=False,
-                      legend=dict(yanchor="top",
-                                y=0.99,
-                                xanchor="left",
-                                x=0.03)
+                      legend=legend
                         )
     return fig
 
@@ -308,12 +284,11 @@ app.layout = html.Div(className='row', children=[
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period='1y', datadir='./data/')
+    df=get_single_stock(symbol, period=period, datadir=datadir)
 
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits=[0.95 * df['Low'].min(), 1.05 * df['High'].max()]
-
+    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -327,12 +302,12 @@ def update_figure(symbol, graph_name, chart_name, days_num):
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period='1y', datadir='./data/')
-
+    df=get_single_stock(symbol, period=period, datadir=datadir)
+    
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits=[0.95 * df['Low'].min(), 1.05 * df['High'].max()]
-
+    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
+    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 # call back, stock-3
@@ -345,12 +320,12 @@ def update_figure(symbol, graph_name, chart_name, days_num):
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period='1y', datadir='./data/')
+    df=get_single_stock(symbol, period=period, datadir=datadir)
 
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits=[0.95 * df['Low'].min(), 1.05 * df['High'].max()]
-
+    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
+    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -364,12 +339,12 @@ def update_figure(symbol, graph_name, chart_name, days_num):
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period='1y', datadir='./data/')
+    df=get_single_stock(symbol, period=period, datadir=datadir)
 
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits=[0.95 * df['Low'].min(), 1.05 * df['High'].max()]
-
+    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
+    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -383,12 +358,12 @@ def update_figure(symbol, graph_name, chart_name, days_num):
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period='1y', datadir='./data/')
+    df=get_single_stock(symbol, period=period, datadir=datadir)
 
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits=[0.95 * df['Low'].min(), 1.05 * df['High'].max()]
-
+    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
+    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -402,15 +377,15 @@ def update_figure(symbol, graph_name, chart_name, days_num):
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period='1y', datadir='./data/')
+    df=get_single_stock(symbol, period=period, datadir=datadir)
 
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits=[0.95 * df['Low'].min(), 1.05 * df['High'].max()]
-
+    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
+    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
 # main function
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=3000)
