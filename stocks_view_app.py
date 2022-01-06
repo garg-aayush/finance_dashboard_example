@@ -58,15 +58,43 @@ def make_fig(df_dict, name='', x="Date", y="Close"):
     return fig
 
 
+def make_line_graph(df, x="Date", y="Close"):
+    fig = px.line(df, x='Date', y='Close')
+    fig.update_layout(margin=margin,
+                      transition_duration=transition_duration)
+    return fig
+
+
+def make_candlestick(df):
+    fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                                         open=df['Open'], high=df['High'],
+                                         low=df['Low'], close=df['Close'],
+                                         )
+                          ])
+    fig.update_layout(margin=margin,
+                      transition_duration=transition_duration,
+                      xaxis_rangeslider_visible=False,
+                      xaxis_title='Date')
+    return fig
 ###################################################
 # App layout
 ###################################################
+
 
 app.layout = html.Div(className='row', children=[
 
     html.Div([
         html.H4("Multiple stocks view"),
-    ], style={'width' : '100%', 'display': 'inline-block'}
+        dcc.RadioItems(
+            id='graph-type',
+            options=[{'label': 'Close price', 'value': 'Close'},
+                     {'label': 'Single-candlestick', 'value': 'Candlestick'},
+                     {'label': 'Both', 'value': 'Both'}
+                     ],
+            value='Close',
+            labelStyle={'display': 'inline-block'}
+        )
+    ], style={'width': '100%', 'display': 'inline-block'}
     ),
 
     html.Div([
@@ -175,72 +203,92 @@ app.layout = html.Div(className='row', children=[
 # call back, stock-1
 @app.callback(
     Output('stock-1', 'figure'),
-    Input('drop-1', 'value'))
-def update_figure(symbol):
+    [Input('drop-1', 'value'),
+     Input('graph-type', 'value')]
+)
+def update_figure(symbol, graph_name):
     df = get_single_stock(symbol, period='1y', datadir='./data/')
-    fig = px.line(df, x='Date', y='Close')
-    fig.update_layout(margin=margin, transition_duration=transition_duration)
-    return fig
+    if graph_name == 'Close':
+        return make_line_graph(df, x='Date', y='Close')
+    elif graph_name == 'Candlestick':
+        return make_candlestick(df)
+    else:
+        fig = make_line_graph(df, x='Date', y='Close') 
 
 # call back, stock-2
 
 
 @app.callback(
     Output('stock-2', 'figure'),
-    Input('drop-2', 'value'))
-def update_figure(symbol):
+    [Input('drop-2', 'value'),
+     Input('graph-type', 'value')]
+)
+def update_figure(symbol, graph_name):
     df = get_single_stock(symbol, period='1y', datadir='./data/')
-    fig = px.line(df, x='Date', y='Close')
-    fig.update_layout(margin=margin, transition_duration=transition_duration)
-    return fig
+    if graph_name == 'Close':
+        return make_line_graph(df, x='Date', y='Close')
+    else:
+        return make_candlestick(df)
 
 # call back, stock-3
 
 
 @app.callback(
     Output('stock-3', 'figure'),
-    Input('drop-3', 'value'))
-def update_figure(symbol):
+    [Input('drop-3', 'value'),
+     Input('graph-type', 'value')]
+)
+def update_figure(symbol, graph_name):
     df = get_single_stock(symbol, period='1y', datadir='./data/')
-    fig = px.line(df, x='Date', y='Close')
-    fig.update_layout(margin=margin, transition_duration=transition_duration)
-    return fig
+    if graph_name == 'Close':
+        return make_line_graph(df, x='Date', y='Close')
+    else:
+        return make_candlestick(df)
 
 # call back, stock-4
 
 
 @app.callback(
     Output('stock-4', 'figure'),
-    Input('drop-4', 'value'))
-def update_figure(symbol):
+    [Input('drop-4', 'value'),
+     Input('graph-type', 'value')]
+)
+def update_figure(symbol, graph_name):
     df = get_single_stock(symbol, period='1y', datadir='./data/')
-    fig = px.line(df, x='Date', y='Close')
-    fig.update_layout(margin=margin, transition_duration=transition_duration)
-    return fig
+    if graph_name == 'Close':
+        return make_line_graph(df, x='Date', y='Close')
+    else:
+        return make_candlestick(df)
 
 # call back, stock-5
 
 
 @app.callback(
     Output('stock-5', 'figure'),
-    Input('drop-5', 'value'))
-def update_figure(symbol):
+    [Input('drop-5', 'value'),
+    Input('graph-type', 'value')]
+)
+def update_figure(symbol, graph_name):
     df = get_single_stock(symbol, period='1y', datadir='./data/')
-    fig = px.line(df, x='Date', y='Close')
-    fig.update_layout(margin=margin, transition_duration=transition_duration)
-    return fig
+    if graph_name == 'Close':
+        return make_line_graph(df, x='Date', y='Close')
+    else:
+        return make_candlestick(df)
 
 # call back, stock-6
 
 
 @app.callback(
     Output('stock-6', 'figure'),
-    Input('drop-6', 'value'))
-def update_figure(symbol):
+    [Input('drop-6', 'value'),
+    Input('graph-type', 'value')]
+) 
+def update_figure(symbol, graph_name):
     df = get_single_stock(symbol, period='1y', datadir='./data/')
-    fig = px.line(df, x='Date', y='Close')
-    fig.update_layout(margin=margin, transition_duration=transition_duration)
-    return fig
+    if graph_name == 'Close':
+        return make_line_graph(df, x='Date', y='Close')
+    else:
+        return make_candlestick(df)
 
 
 # main function
