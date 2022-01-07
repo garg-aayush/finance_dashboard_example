@@ -1,4 +1,4 @@
-# App to view stock prices over the last 1 year
+# Import required libraries
 
 # Import the required packages
 import dash
@@ -11,19 +11,14 @@ from dash.dependencies import Input, Output
 from utils import get_single_stock, check_dir
 from pathlib import Path
 
-##########################
-# CSS sheet
-##########################
-# app = dash.Dash(__name__)
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
+app = dash.Dash(__name__)
+server = app.server
 
 #########################################
 # Global variables and constants
 #########################################
 # port
-port=3000
+port = 3000
 
 # dir path to download and save the stock data
 datadir = './data/'
@@ -48,23 +43,21 @@ del df
 print('Read all the available NSE symbols from {}'.format(file_symbols))
 df_symbols = pd.read_csv(file_symbols)
 
-# create the datadir (if required) 
-check_dir(datadir, create_dir=True)
-
-
 #########################################
 # Helper functions
 #########################################
+
+
 def make_plot_data(df, graph_name='Close', chart_name=['StockPrice'], days=10):
-    
+
     data = []
     for cname in chart_name:
         if cname == 'StockPrice':
             data.append(go.Scatter(
-                                    x=df['Date'], 
+                                    x=df['Date'],
                                     y=df[graph_name],
-                                    name=cname, 
-                                    line=dict(color='black', width=1)
+                                    name=cname,
+                                    line=dict(color="#332f2f", width=1.5)
                                     )
                         )
         if cname == 'Candlestick':
@@ -77,199 +70,299 @@ def make_plot_data(df, graph_name='Close', chart_name=['StockPrice'], days=10):
                         )
         if cname == 'SimpleMovingAverage':
             data.append(go.Scatter(
-                                    x=df['Date'], 
-                                    y=df[graph_name].rolling(days).mean(), 
-                                    name=cname, 
-                                    line=dict(color='blue', width=1.5, dash='dot')
+                                    x=df['Date'],
+                                    y=df[graph_name].rolling(days).mean(),
+                                    name=cname,
+                                    line=dict(color="#2424ed",
+                                              width=2.5, dash='dot')
                                     )
                         )
-    
+
     return data
 
 
-def make_graph(data, xaxis_title='Date', yaxis_limits=[0, 1000], 
-                xaxis_limits=[], legend=dict(yanchor="top",y=0.99,xanchor="left",x=0.03)):
+def make_graph(data, xaxis_title='Date', yaxis_limits=[0, 1000],
+                xaxis_limits=[], legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.03, orientation='h')):
 
     fig = go.Figure(data)
     fig.update_layout(margin=margin,
                       transition_duration=transition_duration,
                       xaxis_rangeslider_visible=False,
-                      xaxis_title=xaxis_title,
+                      #xaxis_title=xaxis_title,
                       yaxis_range=yaxis_limits,
                       xaxis_range=xaxis_limits,
+                      plot_bgcolor="#F9F9F9",
+                      paper_bgcolor="#F9F9F9",
                       # showlegend=False,
                       legend=legend
                         )
+
+    fig.update_xaxes(color="#323232",showgrid=True, gridcolor="white")
+    fig.update_yaxes(color="#323232",showgrid=True, gridcolor="white")
     return fig
 
-###################################################
-# App layout
-###################################################
 
+# Create app layout
+app.layout= html.Div(
+    [
+        # dcc.Store(id='aggregate_data'),
 
-app.layout = html.Div(className='row', children=[
+        # Title
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H2(
+                            'Multiple stocks price analysis',
 
-    html.Div([
-        html.Div([
-            html.H5('Multiple stocs price view'),
-        ], style={'width': '100%', 'display': 'inline-block'}
-        )
-    ]),
+                        ),
+                    ],
 
-    html.Div([
-        html.Div([
-            # html.H4('Multiple Price stock view'),
-            # html.Hr(),
-            html.Label("Stock price"),
-            dcc.RadioItems(
-                id='stock-price',
-                options=[{'label': 'Open ', 'value': 'Open'},
-                         {'label': 'Close', 'value': 'Close'},
-                         {'label': 'Low', 'value': 'Low'},
-                         {'label': 'High', 'value': 'High'}
-                         ],
-                value='Close',
-                labelStyle={'display': 'inline-block', 'margin-right': '5px'},
-                inputStyle={'margin-right': '5px'}
-            )
-        ], style={'width': '30%', 'display': 'inline-block', 'padding-bottom': '-30px'}
+                    className='eight columns'
+                )
+            ],
+            id="header",
+            className='row',
         ),
 
-        html.Div([
-            # html.H4('Multiple Price stock view'),
-            # html.Hr(),
-            html.Label("Chart Type"),
-            dcc.Checklist(
-                id='chart-type',
-                options=[{'label': 'Stock Price', 'value': 'StockPrice'},
-                         {'label': 'Candlestick', 'value': 'Candlestick'},
-                         {'label': 'Simple moving average',
-                             'value': 'SimpleMovingAverage'}
-                         ],
-                value=['StockPrice'],
-                labelStyle={'display': 'inline-block',
-                            'margin-right': '5px'},
-                inputStyle={'margin-right': '5px'}
-            )
-        ], style={'width': '30%', 'display': 'inline-block', 'padding-bottom': '-30px'}
+        # Options
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6(
+                            'Stock Price:',
+                            className="control_label"
+                        ),
+                        dcc.RadioItems(
+                            id='stock-price',
+                            options=[{'label': 'Open ', 'value': 'Open'},
+                                     {'label': 'Close', 'value': 'Close'},
+                                     {'label': 'Low', 'value': 'Low'},
+                                     {'label': 'High', 'value': 'High'}
+                                     ],
+                            value='Close',
+                            # labelStyle={'display': 'inline-block'},
+                            className="dcc_control"
+                        )
+                    ],
+                    className='pretty_container three columns'
+                ),
+
+                html.Div(
+                    [
+                        html.H6(
+                            'Chart Type:',
+                            className="control_label"
+                        ),
+                        dcc.Checklist(
+                            id='chart-type',
+                            options=[{'label': 'Stock Price', 'value': 'StockPrice'},
+                                     {'label': 'Candlestick',
+                                      'value': 'Candlestick'},
+                                     {'label': 'Simple moving average',
+                                      'value': 'SimpleMovingAverage'}
+                                     ],
+                            value=['StockPrice'],
+                            # labelStyle={'display': 'inline-block'},
+                            className="dcc_control"
+                        )
+                    ],
+                    className='pretty_container four columns'
+                ),
+
+                html.Div(
+                    [
+                        html.H6('Moving average Length (in Days):',
+                                className="control_label"
+                                ),
+                        html.Br(),
+                        dcc.Slider(id='days',
+                                   min=1,
+                                   max=50,
+                                   marks={i: '{}'.format(i) if i == 1 else str(i)
+                                          for i in [1, 5, 10, 20, 30, 40, 50]},
+                                   value=10,
+                                   className="dcc_control"
+                                   )
+                    ],
+                    className='pretty_container five columns'
+                )
+            ],
+            className='row'
         ),
 
-        html.Div([
-            html.Label('Moving average Length (in Days)'),
-            dcc.Slider(
-                id='days',
-                min=1,
-                max=50,
-                marks={i: 'Label {}'.format(i) if i == 1 else str(i)
-                        for i in [1,5,10,20,30,40,50]},
-                value=10
-            )
-        ], style={'width': '30%', 'display': 'inline-block', 'padding-bottom': '-30px'}
+        # Graphs
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6(
+                            id="drop_text-1",
+                            className="info_text"
+                        ),
+                        dcc.Dropdown(
+                            id='drop-1',
+                            options=[{'label': s, 'value': s}
+                                     for s in df_symbols['Symbol']
+                                     ],
+                            value=df_symbols['Symbol'][0],
+                        )
+                    ],
+                    className='pretty_container six columns',
+                ),
+                html.Div(
+                    [
+                        html.H6(
+                            id="drop_text-2",
+                            className="info_text"
+                        ),
+                        dcc.Dropdown(
+                            id='drop-2',
+                            options=[{'label': s, 'value': s}
+                                     for s in df_symbols['Symbol']
+                                     ],
+                            value=df_symbols['Symbol'][1],
+                        )
+                    ],
+                    className='pretty_container six columns',
+                ),
+            ],
+            className='row'
         ),
-
-        #html.Hr()
-    ]),
-
-
-    html.Div([
-        dcc.Dropdown(
-            id='drop-1',
-            options=[{'label': s, 'value': s}
-                     for s in df_symbols['Symbol']
-                     ],
-            value=df_symbols['Symbol'][0],
+        html.Div(
+            [
+                html.Div(
+                    [
+                        # dcc.Graph(id='main_graph')
+                        dcc.Graph(id='stock-1')
+                    ],
+                    className='pretty_container six columns',
+                ),
+                html.Div(
+                    [
+                        dcc.Graph(id='stock-2')
+                    ],
+                    className='pretty_container six columns',
+                ),
+            ],
+            className='row'
+        ),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6(
+                            id="drop_text-3",
+                            className="info_text"
+                        ),
+                        dcc.Dropdown(
+                            id='drop-3',
+                            options=[{'label': s, 'value': s}
+                                     for s in df_symbols['Symbol']
+                                     ],
+                            value=df_symbols['Symbol'][2],
+                        )
+                    ],
+                    className='pretty_container six columns',
+                ),
+                html.Div(
+                    [
+                        html.H6(
+                            id="drop_text-4",
+                            className="info_text"
+                        ),
+                        dcc.Dropdown(
+                            id='drop-4',
+                            options=[{'label': s, 'value': s}
+                                     for s in df_symbols['Symbol']
+                                     ],
+                            value=df_symbols['Symbol'][3],
+                        )
+                    ],
+                    className='pretty_container six columns',
+                ),
+            ],
+            className='row'
+        ),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        dcc.Graph(id='stock-3')
+                    ],
+                    className='pretty_container six columns',
+                ),
+                html.Div(
+                    [
+                        dcc.Graph(id='stock-4')
+                    ],
+                    className='pretty_container six columns',
+                ),
+            ],
+            className='row'
+        ),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6(
+                            id="drop_text-5",
+                            className="info_text"
+                        ),
+                        dcc.Dropdown(
+                            id='drop-5',
+                            options=[{'label': s, 'value': s}
+                                     for s in df_symbols['Symbol']
+                                     ],
+                            value=df_symbols['Symbol'][4],
+                        )
+                    ],
+                    className='pretty_container six columns',
+                ),
+                html.Div(
+                    [
+                        html.H6(
+                            id="drop_text-6",
+                            className="info_text"
+                        ),
+                        dcc.Dropdown(
+                            id='drop-6',
+                            options=[{'label': s, 'value': s}
+                                     for s in df_symbols['Symbol']
+                                     ],
+                            value=df_symbols['Symbol'][5],
+                        )
+                    ],
+                    className='pretty_container six columns',
+                ),
+            ],
+            className='row'
+        ),
+        html.Div(
+            [
+                html.Div(
+                    [
+                        dcc.Graph(id='stock-5')
+                    ],
+                    className='pretty_container six columns',
+                ),
+                html.Div(
+                    [
+                        dcc.Graph(id='stock-6')
+                    ],
+                    className='pretty_container six columns',
+                ),
+            ],
+            className='row'
         )
     ],
-        style={'width': '32%', 'display': 'inline-block', 'padding': '5px 3px'}
-    ),
-
-    html.Div([
-        dcc.Dropdown(
-            id='drop-2',
-            options=[{'label': s, 'value': s}
-                     for s in df_symbols['Symbol']
-                     ],
-            value=df_symbols['Symbol'][1],
-        )
-    ],
-        style={'width': '32%', 'display': 'inline-block', 'padding': '5px 3px'}
-    ),
-
-
-    html.Div([
-        dcc.Dropdown(
-            id='drop-3',
-            options=[{'label': s, 'value': s}
-                     for s in df_symbols['Symbol']
-                     ],
-            value=df_symbols['Symbol'][2],
-        )
-    ],
-        style={'width': '32%', 'display': 'inline-block', 'padding': '5px 3px'}
-    ),
-
-    html.Div([
-        dcc.Graph(id='stock-1')
-    ], style={'width': '32%', 'display': 'inline-block', }),
-
-    html.Div([
-        dcc.Graph(id='stock-2')
-    ], style={'width': '32%', 'display': 'inline-block', }),
-
-    html.Div([
-        dcc.Graph(id='stock-3')
-    ], style={'width': '32%', 'display': 'inline-block', }),
-
-
-    html.Div([
-        dcc.Dropdown(
-            id='drop-4',
-            options=[{'label': s, 'value': s}
-                     for s in df_symbols['Symbol']
-                     ],
-            value=df_symbols['Symbol'][3],
-        )
-    ],
-        style={'width': '32%', 'display': 'inline-block', 'padding': '5px 3px'}
-    ),
-
-    html.Div([
-        dcc.Dropdown(
-            id='drop-5',
-            options=[{'label': s, 'value': s}
-                     for s in df_symbols['Symbol']
-                     ],
-            value=df_symbols['Symbol'][4],
-        )
-    ],
-        style={'width': '32%', 'display': 'inline-block', 'padding': '5px 3px'}
-    ),
-
-    html.Div([
-        dcc.Dropdown(
-            id='drop-6',
-            options=[{'label': s, 'value': s}
-                     for s in df_symbols['Symbol']
-                     ],
-            value=df_symbols['Symbol'][5],
-        )
-    ],
-        style={'width': '32%', 'display': 'inline-block', 'padding': '5px 3px'}
-    ),
-
-    html.Div([
-        dcc.Graph(id='stock-4')
-    ], style={'width': '32%', 'display': 'inline-block', }),
-
-    html.Div([
-        dcc.Graph(id='stock-5')
-    ], style={'width': '32%', 'display': 'inline-block', }),
-
-    html.Div([
-        dcc.Graph(id='stock-6')
-    ], style={'width': '32%', 'display': 'inline-block', }),
-])
-
+    id="mainContainer",
+    style={
+        "display": "flex",
+        "flex-direction": "column"
+    }
+)
 
 ###################################################
 # callbacks
@@ -284,13 +377,12 @@ app.layout = html.Div(className='row', children=[
      ]
 )
 def update_figure(symbol, graph_name, chart_name, days_num):
-    df=get_single_stock(symbol, period=period, datadir=datadir)
+    df = get_single_stock(symbol, period=period, datadir=datadir)
 
     # make plot data
-    data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
-    yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
+    data = make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
+    yaxis_limits = [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
-
 
 # call back, stock-2
 @ app.callback(
@@ -307,8 +399,8 @@ def update_figure(symbol, graph_name, chart_name, days_num):
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
     yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
-    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
+
 
 # call back, stock-3
 @ app.callback(
@@ -325,7 +417,6 @@ def update_figure(symbol, graph_name, chart_name, days_num):
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
     yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
-    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -344,7 +435,6 @@ def update_figure(symbol, graph_name, chart_name, days_num):
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
     yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
-    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -363,7 +453,6 @@ def update_figure(symbol, graph_name, chart_name, days_num):
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
     yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
-    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
@@ -382,10 +471,9 @@ def update_figure(symbol, graph_name, chart_name, days_num):
     # make plot data
     data=make_plot_data(df, graph_name=graph_name, chart_name=chart_name, days=days_num)
     yaxis_limits= [ylims_perc[0]*df['Low'].min(), ylims_perc[1]*df['High']]
-    
     return make_graph(data, yaxis_limits=yaxis_limits, xaxis_limits=date_range)
 
 
-# main function
+# Main
 if __name__ == '__main__':
-    app.run_server(debug=True, port=3000)
+    app.server.run(debug=True, threaded=True, port=3000)
