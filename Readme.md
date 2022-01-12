@@ -1,7 +1,7 @@
 ## Introduction
 
 ## Screenshots
-![sample_view](assets/app_sample_view.png)
+![sample_view](assets/app_screenshot.png)
 
 ## Screencast
 
