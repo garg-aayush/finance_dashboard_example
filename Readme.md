@@ -1,9 +1,10 @@
 ## Introduction
 
 ## Screenshots
-![sample_view](assets/app_screenshot.png)
+![sample_screenshot](assets/app_screenshot.png)
 
 ## Screencast
+![sample_screencast](assets/app_screencast.gif)
 
 ## Downloading and running the app
 
