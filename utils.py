@@ -5,7 +5,7 @@
 from numpy import empty
 import yfinance as yf
 import pandas as pd
-import json
+#import json
 import os, sys
 from pathlib import Path
 import plotly.graph_objects as go
@@ -78,22 +78,22 @@ def write_csv(dataframe, outname='./data/sample_stock.csv'):
     print('Write {}'.format(outname))
     dataframe.to_csv(outname)
 
-def write_json(in_dict, outname='./data/multiple_stocks.json'):
-    '''
-    Write a dict as json
+# def write_json(in_dict, outname='./data/multiple_stocks.json'):
+#     '''
+#     Write a dict as json
     
-    Input parameters
-    ----------------
-    in_dict : dictionary to write
-    outname : file to save the data
+#     Input parameters
+#     ----------------
+#     in_dict : dictionary to write
+#     outname : file to save the data
     
-    Output
-    ------
-    None
-    '''
-    print('Write {}'.format(outname))
-    with open(outname, 'w') as outfile:
-        json.dump(in_dict, outfile)
+#     Output
+#     ------
+#     None
+#     '''
+#     print('Write {}'.format(outname))
+#     with open(outname, 'w') as outfile:
+#         json.dump(in_dict, outfile)
 
     
 def read_multiple_stocks(symbol=['RELIANCE.NS'], period='1y', save=True, outdir='./data/'):
