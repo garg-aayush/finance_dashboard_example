@@ -1,0 +1,35 @@
+Bottleneck @ file:///opt/concourse/worker/volumes/live/ac8c8ef3-2ed0-42e9-6ec0-5bb05ad938f6/volume/bottleneck_1607575111469/work
+Brotli==1.0.9
+certifi==2021.10.8
+charset-normalizer==2.0.10
+click==8.0.3
+dash==2.0.0
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+dash-table==5.0.0
+Flask==2.0.2
+Flask-Compress==1.10.1
+idna==3.3
+itsdangerous==2.0.1
+Jinja2==3.0.3
+lxml==4.7.1
+MarkupSafe==2.0.1
+mkl-fft==1.3.1
+mkl-random @ file:///opt/concourse/worker/volumes/live/0cda23d8-7460-44b2-7e5d-3c76a8a0ca7e/volume/mkl_random_1626186083266/work
+mkl-service==2.4.0
+multitasking==0.0.10
+numexpr @ file:///opt/concourse/worker/volumes/live/87ac54fe-281a-440d-4d94-26ac99bdabdc/volume/numexpr_1640704258458/work
+numpy @ file:///opt/concourse/worker/volumes/live/21fb9bb9-9731-4901-4403-2bc27cc2cc33/volume/numpy_and_numpy_base_1634106739792/work
+packaging @ file:///tmp/build/80754af9/packaging_1637314298585/work
+pandas==1.3.5
+pathlib==1.0.1
+plotly==5.5.0
+pyparsing @ file:///tmp/build/80754af9/pyparsing_1635766073266/work
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+pytz==2021.3
+requests==2.27.1
+six @ file:///tmp/build/80754af9/six_1623709665295/work
+tenacity==8.0.1
+urllib3==1.26.8
+Werkzeug==2.0.2
+yfinance==0.1.68
