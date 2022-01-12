@@ -1,4 +1,7 @@
 ## Introduction
+`finance_dashboard` is a sample plotly interactive dashboard to track the last *1 year* price movement for the stocks along with facilities to generate the [**simple moving average**](https://www.investopedia.com/terms/s/sma.asp)  and [**candlestick patterns**](https://www.investopedia.com/trading/candlestick-charting-what-is-it/) graphs. 
+
+The dashboard can be used to track **six** companies stock prices at a time. It makes use of [**yfinance**](https://pypi.org/project/yfinance/) package to get stock info from [Yahoo finance website](https://finance.yahoo.com/).  Note, the sample symbols are for companies listed on [NSE (National Stock Exchange)](https://www.nseindia.com/).
 
 ## Screenshots
 ![sample_screenshot](assets/app_screenshot.png)
