@@ -9,13 +9,13 @@ import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
-from utils import get_single_stock, check_dir
+from utils import get_single_stock, check_dir, write_sample_stock, clear_cache_data
 from pathlib import Path
 
 app = dash.Dash(__name__)
 server = app.server
 
-#########################################
+########################################
 # Global variables and constants
 #########################################
 # port
@@ -26,7 +26,16 @@ datadir = './data/'
 # time period
 period = '1y'
 # file containing all the NS symbols
-file_symbols = 'symbols_ns.csv'
+file_symbols = './data/symbols_ns.csv'
+# clear cache data
+clear_data=True
+# default symbols
+default_symbols = ['RELIANCE',
+                    'TATAMOTORS',
+                    'ADANIPORTS',
+                    'GLAXO',
+                    'INFY',
+                    'IRCTC' ]
 
 # plot parameters
 margin = dict(l=25, r=25, t=30, b=5, pad=0)
@@ -35,10 +44,15 @@ transition_duration = 300
 ylims_perc = [0.95, 1.05]
 
 # xaxis [min, max] : [min_date, max_date]
-df = pd.read_csv('sample_stock.csv')
+# write sample stock (min, max date)
+write_sample_stock()
+df = pd.read_csv('./data/sample_stock.csv')
 date_range = [df['Date'].min(), df['Date'].max()]
 del df
 
+# clear all existing stock data with extension '.NS'
+clear_cache_data(datadir='./data/', value=clear_data)
+    
 # Create necessary variables and data folder
 # load all the symbols in the memory
 print('Read all the available NSE symbols from {}'.format(file_symbols))
@@ -207,7 +221,8 @@ app.layout= html.Div(
                             options=[{'label': s, 'value': s}
                                      for s in df_symbols['Symbol']
                                      ],
-                            value=df_symbols['Symbol'][0],
+                            #value=df_symbols['Symbol'][0],
+                            value=default_symbols[0],
                         )
                     ],
                     className='pretty_container six columns',
@@ -223,7 +238,8 @@ app.layout= html.Div(
                             options=[{'label': s, 'value': s}
                                      for s in df_symbols['Symbol']
                                      ],
-                            value=df_symbols['Symbol'][1],
+                            value=default_symbols[1],
+
                         )
                     ],
                     className='pretty_container six columns',
@@ -262,7 +278,8 @@ app.layout= html.Div(
                             options=[{'label': s, 'value': s}
                                      for s in df_symbols['Symbol']
                                      ],
-                            value=df_symbols['Symbol'][2],
+                            value=default_symbols[2],
+
                         )
                     ],
                     className='pretty_container six columns',
@@ -278,7 +295,8 @@ app.layout= html.Div(
                             options=[{'label': s, 'value': s}
                                      for s in df_symbols['Symbol']
                                      ],
-                            value=df_symbols['Symbol'][3],
+                            value=default_symbols[3],
+
                         )
                     ],
                     className='pretty_container six columns',
@@ -316,7 +334,8 @@ app.layout= html.Div(
                             options=[{'label': s, 'value': s}
                                      for s in df_symbols['Symbol']
                                      ],
-                            value=df_symbols['Symbol'][4],
+                            value=default_symbols[4],
+
                         )
                     ],
                     className='pretty_container six columns',
@@ -332,7 +351,8 @@ app.layout= html.Div(
                             options=[{'label': s, 'value': s}
                                      for s in df_symbols['Symbol']
                                      ],
-                            value=df_symbols['Symbol'][5],
+                            value=default_symbols[5],
+
                         )
                     ],
                     className='pretty_container six columns',

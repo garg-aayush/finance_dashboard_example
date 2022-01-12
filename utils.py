@@ -246,6 +246,23 @@ def make_candlestick(df, margin={}, transition_duration=300):
     return fig
 
 
+def write_sample_stock(symbol='ADANIPORTS'):
+    # read and write single stock
+    symbol = 'ADANIPORTS'
+    df = download_single_stock(symbol + '.NS')
+    write_csv(df, outname='./data/sample_stock.csv') 
+
+# clear all existing stock data with extension '.NS'
+def clear_cache_data(datadir='./data/', value=True):
+    if value:
+        print('Clear all ".NS" files from {}'.format(datadir))
+        files = os.listdir(datadir)
+        NS_files = [file for file in files if file.endswith('.NS')]
+        for file in NS_files:
+            print('Remove {}'.format(file))
+            os.remove(datadir+file)
+        print('Clear all ".NS" files from {}'.format(datadir))
+       
 
 if __name__ == '__main__':
     # # read and write single stock
